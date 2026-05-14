@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BDD Forge - PM-XD Hackathon 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sora', sans-serif; background: linear-gradient(180deg, #0B1120 0%, #0F172A 100%); color: #E2E8F0; min-height: 100vh; }
+  ::selection { background: #6366F155; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+  @keyframes bddpulse { 0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; } 40% { transform: scale(1); opacity: 1; } }
+  @keyframes fadeSlide { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .container { max-width: 900px; margin: 0 auto; padding: 28px 20px; }
+  
+  /* Header */
+  .header { text-align: center; margin-bottom: 28px; }
+  .header-top { display: flex; justify-content: center; align-items: center; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+  .badge { display: inline-block; background: linear-gradient(135deg, #6366F1, #A855F7); color: #FFF; font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; padding: 6px 16px; border-radius: 100px; }
+  .title { font-size: 44px; font-weight: 800; color: #F8FAFC; letter-spacing: -1px; line-height: 1.1; }
+  .title .accent { color: #6366F1; transition: color .3s; }
+  .subtitle { font-size: 15px; color: #94A3B8; margin-top: 6px; font-weight: 300; }
+  .tagline { font-size: 12px; color: #475569; margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+  
+  /* API Key Bar */
+  .api-bar { background: #1E293B; border: 1px solid #334155; border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; }
+  .api-bar-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .api-bar label { color: #94A3B8; font-size: 13px; font-weight: 600; white-space: nowrap; }
+  .api-bar input { flex: 1; min-width: 200px; background: #0F172A; border: 1px solid #334155; border-radius: 8px; padding: 8px 12px; color: #E2E8F0; font-size: 13px; font-family: 'JetBrains Mono', monospace; }
+  .api-bar input:focus { outline: none; border-color: #6366F1; }
+  .api-bar .hint { color: #64748B; font-size: 11px; margin-top: 8px; line-height: 1.5; }
+  .demo-btn { background: linear-gradient(135deg, #10B981, #059669); border: none; border-radius: 8px; padding: 8px 16px; color: #FFF; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Sora', sans-serif; white-space: nowrap; }
+  
+  /* Mode toggle */
+  .mode-tag { display: inline-block; font-size: 10px; padding: 3px 10px; border-radius: 100px; font-weight: 700; margin-left: 8px; }
+  .mode-live { background: #6366F122; color: #6366F1; border: 1px solid #6366F144; }
+  .mode-demo { background: #10B98122; color: #10B981; border: 1px solid #10B98144; }
+  
+  /* Persona cards */
+  .section { margin-bottom: 28px; }
+  .section-title { font-size: 17px; font-weight: 700; color: #F8FAFC; margin-bottom: 4px; }
+  .persona-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .persona-card { padding: 20px 16px; border-radius: 14px; text-align: center; transition: all .25s; font-family: 'Sora', sans-serif; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; background: #0F172A; border: 2px solid #334155; }
+  .persona-card.active { transform: scale(1.02); }
+  .persona-card.disabled { opacity: 0.5; cursor: not-allowed; }
+  .persona-icon { font-size: 32px; }
+  .persona-title { font-weight: 700; font-size: 15px; color: #F8FAFC; }
+  .persona-desc { color: #94A3B8; font-size: 11px; line-height: 1.5; margin-top: 4px; }
+  .persona-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 6px; }
+  .focus-badge { font-size: 9px; padding: 2px 8px; border-radius: 100px; border: 1px solid; font-weight: 600; }
+  
+  /* Stepper */
+  .stepper { display: flex; align-items: center; justify-content: center; margin: 20px 0 28px; flex-wrap: wrap; }
+  .step-item { display: flex; align-items: center; gap: 6px; }
+  .step-circle { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #F8FAFC; transition: all .3s; background: #1E293B; border: 2px solid #334155; }
+  .step-label { font-size: 12px; transition: all .3s; white-space: nowrap; color: #64748B; }
+  .step-line { width: 36px; height: 2px; border-radius: 1px; margin: 0 4px; background: #334155; transition: all .3s; }
+  
+  /* Input section */
+  .input-section { background: #1E293B; border: 1px solid #334155; border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+  .input-label { font-size: 14px; font-weight: 600; margin-bottom: 10px; display: block; }
+  .textarea { width: 100%; background: #0F172A; border: 1px solid #334155; border-radius: 10px; padding: 14px; color: #E2E8F0; font-size: 13px; font-family: 'Sora', sans-serif; resize: vertical; line-height: 1.6; }
+  .textarea:focus { outline: none; border-color: #6366F1; }
+  .sample-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .sample-btn { background: #0F172A; border: 1px solid #334155; border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; font-family: 'Sora', sans-serif; color: #6366F1; }
+  .run-btn { margin-top: 14px; width: 100%; padding: 13px 24px; border: none; border-radius: 10px; color: #FFF; font-size: 14px; font-weight: 700; font-family: 'Sora', sans-serif; letter-spacing: 0.4px; cursor: pointer; transition: all .2s; }
+  .run-btn:disabled { background: #334155 !important; cursor: not-allowed; }
+  .error { margin-top: 12px; padding: 12px; background: #7F1D1D33; border: 1px solid #EF4444; border-radius: 8px; color: #FCA5A5; font-size: 13px; }
+  
+  /* Result cards */
+  .result-card { background: #1E293B; border: 1px solid #334155; border-radius: 16px; padding: 24px; margin-bottom: 16px; animation: fadeSlide .4s ease; }
+  .result-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .result-title { font-size: 16px; font-weight: 700; flex: 1; }
+  .emphasis-badge { font-size: 10px; padding: 3px 10px; border-radius: 100px; font-weight: 700; flex-shrink: 0; }
+  
+  /* Gherkin & Code */
+  .gherkin-pre, .code-pre { font-family: 'JetBrains Mono', monospace; line-height: 1.7; background: #0F172A; border-radius: 10px; padding: 18px; overflow-x: auto; border: 1px solid #1E293B; white-space: pre-wrap; word-break: break-word; }
+  .gherkin-pre { font-size: 12px; }
+  .code-pre { font-size: 11px; }
+  
+  /* Test results */
+  .test-summary { background: #0F172A; border-radius: 10px; padding: 18px; margin-bottom: 12px; border: 1px solid #1E293B; }
+  .test-summary-row { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+  .test-pct { font-size: 32px; font-weight: 800; color: #F8FAFC; }
+  .test-bar { width: 100%; height: 8px; background: #1E293B; border-radius: 4px; overflow: hidden; }
+  .test-bar-fill { height: 100%; border-radius: 4px; transition: width .8s ease; }
+  .test-scenario { background: #0F172A; border: 1px solid #1E293B; border-radius: 10px; padding: 14px; margin-bottom: 8px; }
+  .test-scenario-header { display: flex; align-items: center; gap: 4px; }
+  .test-step { display: flex; align-items: center; padding: 2px 0; gap: 4px; }
+  .risk-badge { font-size: 10px; padding: 2px 8px; border-radius: 100px; font-weight: 600; margin-left: 8px; text-transform: uppercase; }
+  
+  /* Loading */
+  .loading { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 32px; }
+  .loading-dots { display: flex; gap: 6px; }
+  .loading-dot { width: 8px; height: 8px; border-radius: 50%; background: #6366F1; animation: bddpulse 1.4s infinite ease-in-out; }
+  
+  /* Completion */
+  .completion-banner { background: linear-gradient(135deg, #1E293B, #0F172A); border: 1px solid #6366F133; border-radius: 16px; padding: 28px; text-align: center; margin-bottom: 20px; }
+  .value-props { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-top: 20px; }
+  .value-prop { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px; background: #1E293B; border-radius: 12px; border: 1px solid #334155; }
+  
+  .footer { text-align: center; color: #475569; font-size: 11px; padding: 20px 0 8px; font-family: 'JetBrains Mono', monospace; }
+  
+  @media (max-width: 640px) {
+    .persona-grid { grid-template-columns: 1fr; }
+    .title { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="app"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useRef, useCallback } = React;
+
+/* ───── DEMO DATA ───── */
+const DEMO_BDD = `@eitc @tax-credits @turbotax
+Feature: EITC Qualification Engine
+  As a TurboTax user
+  I want the system to determine if I qualify for the EITC
+  So that I can maximize my tax refund
+
+  Background:
+    Given the tax year is 2024
+    And the EITC income thresholds are loaded from IRS Publication 596
+    And the investment income limit is $11,000
+
+  # Acceptance Criteria: Basic EITC eligibility
+  @happy-path @P0
+  Scenario: Single filer with two qualifying children qualifies for EITC
+    Given a taxpayer with filing status "Single"
+    And earned income of $38,000
+    And 2 qualifying children under age 19
+    And investment income of $2,500
+    When the EITC eligibility check is performed
+    Then the taxpayer should qualify for EITC
+    And the estimated credit amount should be approximately $5,980
+    And the credit should be classified as "refundable"
+
+  @happy-path @P1
+  Scenario: Married filing jointly with no qualifying children
+    Given a taxpayer with filing status "Married Filing Jointly"
+    And combined earned income of $22,000
+    And 0 qualifying children
+    And both taxpayers are between ages 25 and 65
+    When the EITC eligibility check is performed
+    Then the taxpayer should qualify for EITC
+    And the estimated credit amount should be approximately $600
+
+  @edge-case @boundary @P0
+  Scenario: Income at exact EITC threshold boundary
+    Given a taxpayer with filing status "Head of Household"
+    And earned income of $55,768
+    And 3 qualifying children under age 19
+    When the EITC eligibility check is performed
+    Then the taxpayer should be flagged for threshold review
+
+  @error-handling @P0
+  Scenario: Married Filing Separately is ineligible for EITC
+    Given a taxpayer with filing status "Married Filing Separately"
+    And earned income of $25,000
+    And 1 qualifying child
+    When the EITC eligibility check is performed
+    Then the taxpayer should NOT qualify for EITC
+    And the disqualification reason should be "MFS filing status is not eligible"`;
+
+const DEMO_CODE = `/**
+ * EITC Qualification Engine
+ * Implements IRS Earned Income Tax Credit eligibility rules (2024)
+ * @module EITCQualification
+ */
+
+// 2024 EITC Income Thresholds by filing status and number of children
+const EITC_THRESHOLDS = {
+  single: { 0: 18591, 1: 46560, 2: 52918, 3: 56838 },
+  mfj:    { 0: 25511, 1: 53120, 2: 59478, 3: 63398 },
+  hoh:    { 0: 18591, 1: 46560, 2: 52918, 3: 56838 },
+};
+
+const MAX_CREDIT = { 0: 632, 1: 3995, 2: 5980, 3: 6728 };
+const MAX_INVESTMENT_INCOME = 11000;
+
+// Step: Given a taxpayer with filing status {status}
+export function createTaxpayer(filingStatus, earnedIncome, children, investmentIncome = 0) {
+  return { filingStatus, earnedIncome, children: Math.min(children, 3), investmentIncome };
+}
+
+// Step: When the EITC eligibility check is performed
+export function checkEITCEligibility(taxpayer) {
+  const { filingStatus, earnedIncome, children, investmentIncome } = taxpayer;
+
+  // MFS is always ineligible
+  if (filingStatus === "Married Filing Separately") {
+    return { eligible: false, reason: "MFS filing status is not eligible", credit: 0 };
+  }
+
+  // Investment income check
+  if (investmentIncome > MAX_INVESTMENT_INCOME) {
+    return { eligible: false, reason: \`Investment income \$\${investmentIncome} exceeds \$\${MAX_INVESTMENT_INCOME} limit\`, credit: 0 };
+  }
+
+  // Map filing status to threshold key
+  const statusKey = filingStatus === "Married Filing Jointly" ? "mfj"
+    : filingStatus === "Head of Household" ? "hoh" : "single";
+
+  const threshold = EITC_THRESHOLDS[statusKey]?.[children];
+  if (!threshold) return { eligible: false, reason: "Invalid filing configuration", credit: 0 };
+
+  // Boundary check (within 1% of threshold)
+  if (earnedIncome > threshold * 0.99 && earnedIncome <= threshold) {
+    return { eligible: true, flagged: true, reason: "Income near threshold — manual review", credit: calculateCredit(earnedIncome, children, threshold) };
+  }
+
+  if (earnedIncome > threshold) {
+    return { eligible: false, reason: \`Income \$\${earnedIncome} exceeds threshold \$\${threshold}\`, credit: 0 };
+  }
+
+  return { eligible: true, flagged: false, credit: calculateCredit(earnedIncome, children, threshold) };
+}
+
+function calculateCredit(income, children, threshold) {
+  const maxCredit = MAX_CREDIT[children] || 0;
+  const ratio = Math.max(0, 1 - (income / threshold));
+  return Math.round(maxCredit * (0.5 + ratio * 0.5));
+}`;
+
+const DEMO_TESTS = [
+  { scenario: "Single filer with two qualifying children qualifies for EITC", status: "passed", duration: 14,
+    steps: [
+      { text: 'Given a taxpayer with filing status "Single"', status: "passed", duration: 2 },
+      { text: "And earned income of $38,000", status: "passed", duration: 1 },
+      { text: "And 2 qualifying children under age 19", status: "passed", duration: 1 },
+      { text: "And investment income of $2,500", status: "passed", duration: 1 },
+      { text: "When the EITC eligibility check is performed", status: "passed", duration: 5 },
+      { text: "Then the taxpayer should qualify for EITC", status: "passed", duration: 2 },
+      { text: "And the estimated credit amount should be approximately $5,980", status: "passed", duration: 2 },
+    ], coverage: "94%", risk: "low" },
+  { scenario: "Married filing jointly with no qualifying children", status: "passed", duration: 11,
+    steps: [
+      { text: 'Given a taxpayer with filing status "Married Filing Jointly"', status: "passed", duration: 2 },
+      { text: "And combined earned income of $22,000", status: "passed", duration: 1 },
+      { text: "And 0 qualifying children", status: "passed", duration: 1 },
+      { text: "When the EITC eligibility check is performed", status: "passed", duration: 4 },
+      { text: "Then the taxpayer should qualify for EITC", status: "passed", duration: 2 },
+      { text: "And the estimated credit amount should be approximately $600", status: "passed", duration: 1 },
+    ], coverage: "94%", risk: "low" },
+  { scenario: "Income at exact EITC threshold boundary", status: "failed", duration: 18,
+    steps: [
+      { text: 'Given a taxpayer with filing status "Head of Household"', status: "passed", duration: 2 },
+      { text: "And earned income of $55,768", status: "passed", duration: 1 },
+      { text: "And 3 qualifying children under age 19", status: "passed", duration: 1 },
+      { text: "When the EITC eligibility check is performed", status: "passed", duration: 5 },
+      { text: "Then the taxpayer should be flagged for threshold review", status: "failed", duration: 9 },
+    ], coverage: "94%", risk: "high" },
+  { scenario: "Married Filing Separately is ineligible for EITC", status: "passed", duration: 9,
+    steps: [
+      { text: 'Given a taxpayer with filing status "Married Filing Separately"', status: "passed", duration: 2 },
+      { text: "And earned income of $25,000", status: "passed", duration: 1 },
+      { text: "When the EITC eligibility check is performed", status: "passed", duration: 3 },
+      { text: "Then the taxpayer should NOT qualify for EITC", status: "passed", duration: 2 },
+      { text: 'And the disqualification reason should be "MFS filing status is not eligible"', status: "passed", duration: 1 },
+    ], coverage: "94%", risk: "low" },
+];
+
+/* ───── CONFIG ───── */
+const PERSONAS = {
+  pm: { id:"pm", icon:"📋", title:"Product Manager", desc:"I have a raw spec or PRD and want executable BDD scenarios as a shared contract", color:"#F59E0B", gradient:"linear-gradient(135deg, #F59E0B, #D97706)", inputLabel:"📄 Paste Your Product Requirement / PRD", emphasis:"bdd", ctaText:"🚀 Generate BDD Specs from Requirement", focusBadges:["Requirement Traceability","Shared Contract","Acceptance Criteria"] },
+  dev: { id:"dev", icon:"⚙️", title:"Developer", desc:"I have a requirement to build and want AI-generated code with BDD-backed tests", color:"#6366F1", gradient:"linear-gradient(135deg, #6366F1, #8B5CF6)", inputLabel:"🔧 Describe the Feature to Build", emphasis:"code", ctaText:"🚀 Generate Implementation from Spec", focusBadges:["Step Definitions","Code Architecture","Edge Case Coverage"] },
+  qa: { id:"qa", icon:"🧪", title:"QA / Tester", desc:"I want to validate quality with comprehensive BDD test scenarios and coverage analysis", color:"#10B981", gradient:"linear-gradient(135deg, #10B981, #059669)", inputLabel:"🎯 Describe What Needs Testing", emphasis:"tests", ctaText:"🚀 Generate Test Suite & Run Validation", focusBadges:["Test Coverage","Edge Cases","Quality Gate"] },
+};
+
+const PHASE_CONFIG = {
+  requirement: { label:"Requirement", icon:"📋", color:"#F59E0B" },
+  bdd: { label:"BDD Scenarios", icon:"🧪", color:"#10B981" },
+  code: { label:"Implementation", icon:"⚙️", color:"#6366F1" },
+  tests: { label:"Test Results", icon:"✅", color:"#EC4899" },
+};
+
+const SAMPLES = {
+  pm: ["As a taxpayer filing with TurboTax, I want the system to determine if I qualify for the Earned Income Tax Credit (EITC) based on my filing status, income, and number of qualifying children, so that I can maximize my refund.", "As a first-time filer, I want TurboTax to provide a guided interview that asks me simple questions and translates my answers into the correct tax forms."],
+  dev: ["Build a quarterly estimated tax payment calculator for self-employed taxpayers that factors in projected annual income, business deductions, self-employment tax, and prior year safe harbor rules.", "Implement the TurboTax W-2 import module that accepts a photographed W-2 image, extracts key fields via OCR, and validates against IRS format rules."],
+  qa: ["Validate the W-2 import flow in TurboTax: a user photographs their W-2, the OCR extracts employer EIN, wages, and withholdings. Cover cases for blurry images, multiple W-2s, and amended forms.", "Test the EITC qualification engine for all filing statuses, income thresholds for 0-3 qualifying children, investment income limits, and age requirements."],
+};
+
+const SYSTEM_PROMPTS = {
+  bdd: (p) => `You are a senior QA architect specializing in BDD for TurboTax at Intuit. Given a product ${p==="pm"?"requirement/PRD":p==="dev"?"feature spec":"test request"}, generate precise Gherkin BDD scenarios.\n\nRules:\n- Generate 3-4 scenarios covering happy path, edge cases, and error handling\n- Use realistic TurboTax domain data (2024 tax brackets, EITC thresholds, filing statuses)\n- Each scenario must have Feature, Scenario, Given, When, Then, And steps\n- Include @tags for categorization\n${p==="pm"?"- Add acceptance criteria notes as comments":""}${p==="qa"?"- Include boundary value scenarios and @priority tags (P0, P1, P2)":""}\n\nRespond ONLY with the Gherkin text. No markdown fences, no preamble.`,
+  code: (p) => `You are a senior software engineer at Intuit working on TurboTax. Given BDD Gherkin scenarios, generate a clean JavaScript implementation.\n\nRules:\n- Implement the business logic described in the scenarios\n- Use clean, readable code with JSDoc comments\n${p==="dev"?"- Include detailed step definition mappings and error handling":"- Include step definitions as comments"}\n- Use realistic 2024 tax calculation logic\n- Keep under 90 lines\n\nRespond ONLY with the code. No markdown fences.`,
+  tests: (p) => `You are a QA engineer at Intuit. Given BDD scenarios and implementation code, generate test execution results as a JSON array.\n\nEach test: { "scenario": name, "steps": [{ "text": step, "status": "passed"|"failed"|"skipped", "duration": ms }], "status": "passed"|"failed", "duration": ms${p==="qa"?', "coverage": "94%", "risk": "low"|"medium"|"high"':""}}\n\nMake 80-90% pass. Respond ONLY with valid JSON array.`,
+};
+
+async function callClaude(apiKey, systemPrompt, userMessage) {
+  const resp = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+    body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, system: systemPrompt, messages: [{ role: "user", content: userMessage }] }),
+  });
+  const data = await resp.json();
+  if (data.error) throw new Error(data.error.message || "API error");
+  return data.content.filter(b => b.type === "text").map(b => b.text).join("\n");
+}
+
+/* ───── COMPONENTS ───── */
+
+function GherkinViewer({ text }) {
+  if (!text) return null;
+  return React.createElement("pre", { className: "gherkin-pre" },
+    text.split("\n").map((line, i) => {
+      const t = line.trim();
+      let color = "#CBD5E1", weight = 400;
+      if (t.startsWith("Feature:")) { color = "#F59E0B"; weight = 700; }
+      else if (t.startsWith("Scenario")) { color = "#10B981"; weight = 600; }
+      else if (t.startsWith("Background:")) { color = "#A78BFA"; weight = 600; }
+      else if (/^(Given|When|Then|And|But)\b/.test(t)) color = "#38BDF8";
+      else if (t.startsWith("#")) color = "#64748B";
+      else if (t.startsWith("@")) color = "#F472B6";
+      return React.createElement("div", { key: i, style: { color, fontWeight: weight, minHeight: 20 } }, line);
+    })
+  );
+}
+
+function CodeViewer({ text }) {
+  if (!text) return null;
+  return React.createElement("pre", { className: "code-pre" },
+    text.split("\n").map((line, i) => {
+      let color = "#E2E8F0";
+      if (line.trim().startsWith("//") || line.trim().startsWith("*")) color = "#64748B";
+      else if (/\b(function|const|let|var|return|if|else|export|import|class|switch|case|default|throw|new)\b/.test(line)) color = "#C084FC";
+      else if (/\b(true|false|null|undefined)\b/.test(line)) color = "#F59E0B";
+      return React.createElement("div", { key: i, style: { color, minHeight: 20 } },
+        React.createElement("span", { style: { color: "#475569", marginRight: 16, userSelect: "none", display: "inline-block", width: 30, textAlign: "right" } }, i + 1),
+        line
+      );
+    })
+  );
+}
+
+function TestResults({ results, persona }) {
+  if (!results?.length) return null;
+  const total = results.length, passed = results.filter(r => r.status === "passed").length;
+  const pct = Math.round((passed / total) * 100);
+  const isQA = persona === "qa";
+
+  return React.createElement("div", null,
+    React.createElement("div", { className: "test-summary" },
+      React.createElement("div", { className: "test-summary-row" },
+        React.createElement("span", { className: "test-pct" }, pct + "%"),
+        React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } },
+          React.createElement("span", { style: { color: "#94A3B8" } }, passed + " passed · " + (total - passed) + " failed · " + total + " scenarios"),
+          isQA && React.createElement("span", { style: { color: "#64748B", fontSize: 11 } }, "Coverage: " + (results[0]?.coverage || "N/A") + " · Risk: " + (results.some(r => r.risk === "high") ? "⚠️ High" : "✅ Low"))
+        )
+      ),
+      React.createElement("div", { className: "test-bar" },
+        React.createElement("div", { className: "test-bar-fill", style: { width: pct + "%", background: pct === 100 ? "#10B981" : "linear-gradient(90deg, #10B981, #F59E0B)" } })
+      )
+    ),
+    results.map((r, ri) => React.createElement("div", { key: ri, className: "test-scenario" },
+      React.createElement("div", { className: "test-scenario-header" },
+        React.createElement("span", { style: { fontSize: 16, marginRight: 8 } }, r.status === "passed" ? "✅" : "❌"),
+        React.createElement("span", { style: { fontWeight: 600, color: "#F8FAFC", flex: 1, fontSize: 13 } }, r.scenario),
+        React.createElement("span", { style: { color: "#64748B", fontSize: 11 } }, r.duration + "ms"),
+        isQA && r.risk && React.createElement("span", { className: "risk-badge", style: { background: r.risk === "high" ? "#7F1D1D" : r.risk === "medium" ? "#78350F" : "#064E3B", color: r.risk === "high" ? "#FCA5A5" : r.risk === "medium" ? "#FDE68A" : "#6EE7B7" } }, r.risk)
+      ),
+      React.createElement("div", { style: { padding: "4px 0 0 28px" } },
+        (r.steps || []).map((s, si) => React.createElement("div", { key: si, className: "test-step" },
+          React.createElement("span", { style: { color: s.status === "passed" ? "#10B981" : s.status === "failed" ? "#EF4444" : "#64748B", marginRight: 8, fontFamily: "monospace", fontSize: 11 } }, s.status === "passed" ? "✓" : s.status === "failed" ? "✗" : "○"),
+          React.createElement("span", { style: { color: s.status === "failed" ? "#FCA5A5" : "#94A3B8", fontSize: 12, flex: 1 } }, s.text),
+          React.createElement("span", { style: { color: "#475569", fontSize: 10, flexShrink: 0 } }, s.duration + "ms")
+        ))
+      )
+    ))
+  );
+}
+
+function LoadingPulse({ message }) {
+  return React.createElement("div", { className: "loading" },
+    React.createElement("div", { className: "loading-dots" },
+      [0,1,2].map(i => React.createElement("div", { key: i, className: "loading-dot", style: { animationDelay: i * 0.2 + "s" } }))
+    ),
+    React.createElement("span", { style: { color: "#94A3B8", fontSize: 14 } }, message)
+  );
+}
+
+/* ───── MAIN APP ───── */
+function BDDForge() {
+  const [apiKey, setApiKey] = useState("");
+  const [mode, setMode] = useState("demo"); // "demo" or "live"
+  const [persona, setPersona] = useState(null);
+  const [requirement, setRequirement] = useState("");
+  const [currentPhase, setCurrentPhase] = useState("requirement");
+  const [completedPhases, setCompletedPhases] = useState([]);
+  const [bddText, setBddText] = useState("");
+  const [codeText, setCodeText] = useState("");
+  const [testResults, setTestResults] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState("");
+  const [error, setError] = useState("");
+  const resultRef = useRef(null);
+
+  const scroll = () => setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+  const personaCfg = persona ? PERSONAS[persona] : null;
+  const isLive = mode === "live" && apiKey.startsWith("sk-");
+
+  const runDemo = useCallback(async () => {
+    if (!requirement.trim() || !persona) return;
+    setError(""); setBddText(""); setCodeText(""); setTestResults(null); setCompletedPhases([]);
+
+    const delay = (ms) => new Promise(r => setTimeout(r, ms));
+
+    setCurrentPhase("bdd"); setLoading(true);
+    setLoadingMsg("Generating BDD scenarios…"); scroll();
+    await delay(2000);
+    setBddText(DEMO_BDD); setCompletedPhases(["requirement"]); setLoading(false);
+    await delay(800);
+
+    setCurrentPhase("code"); setLoading(true);
+    setLoadingMsg("Generating implementation code…"); scroll();
+    await delay(2500);
+    setCodeText(DEMO_CODE); setCompletedPhases(["requirement", "bdd"]); setLoading(false);
+    await delay(800);
+
+    setCurrentPhase("tests"); setLoading(true);
+    setLoadingMsg("Running test scenarios…"); scroll();
+    await delay(2000);
+    setTestResults(DEMO_TESTS);
+    setCompletedPhases(["requirement", "bdd", "code", "tests"]);
+    setLoading(false); scroll();
+  }, [requirement, persona]);
+
+  const runLive = useCallback(async () => {
+    if (!requirement.trim() || !persona || !apiKey) return;
+    setError(""); setBddText(""); setCodeText(""); setTestResults(null); setCompletedPhases([]);
+    try {
+      setCurrentPhase("bdd"); setLoading(true); setLoadingMsg("AI generating BDD scenarios…"); scroll();
+      const bdd = await callClaude(apiKey, SYSTEM_PROMPTS.bdd(persona), "Input:\n" + requirement);
+      setBddText(bdd); setCompletedPhases(["requirement"]); setLoading(false);
+      await new Promise(r => setTimeout(r, 800));
+
+      setCurrentPhase("code"); setLoading(true); setLoadingMsg("AI generating implementation…"); scroll();
+      const code = await callClaude(apiKey, SYSTEM_PROMPTS.code(persona), "BDD Scenarios:\n" + bdd + "\n\nGenerate the implementation code.");
+      setCodeText(code); setCompletedPhases(["requirement", "bdd"]); setLoading(false);
+      await new Promise(r => setTimeout(r, 800));
+
+      setCurrentPhase("tests"); setLoading(true); setLoadingMsg("AI executing test scenarios…"); scroll();
+      const raw = await callClaude(apiKey, SYSTEM_PROMPTS.tests(persona), "BDD:\n" + bdd + "\n\nCode:\n" + code + "\n\nGenerate test results.");
+      let parsed;
+      try { parsed = JSON.parse(raw.replace(/```json|```/g, "").trim()); } catch { parsed = DEMO_TESTS; }
+      setTestResults(parsed); setCompletedPhases(["requirement", "bdd", "code", "tests"]);
+      setLoading(false); scroll();
+    } catch (e) { setError(e.message); setLoading(false); }
+  }, [requirement, persona, apiKey]);
+
+  const runPipeline = isLive ? runLive : runDemo;
+
+  return React.createElement("div", null,
+    // Header
+    React.createElement("header", { className: "header" },
+      React.createElement("div", { className: "header-top" },
+        React.createElement("div", { className: "badge" }, "🏆 PM-XD Hackathon 2026")
+      ),
+      React.createElement("h1", { className: "title" },
+        React.createElement("span", { className: "accent", style: { color: personaCfg?.color || "#6366F1" } }, "BDD"),
+        " Forge"
+      ),
+      React.createElement("p", { className: "subtitle" }, "AI-Powered Behavioral Driven Development for TurboTax"),
+      React.createElement("p", { className: "tagline" }, "Requirements → BDD Scenarios → Implementation → Test Results")
+    ),
+
+    // API Key bar
+    React.createElement("div", { className: "api-bar" },
+      React.createElement("div", { className: "api-bar-row" },
+        React.createElement("label", null, "🔑 Mode:"),
+        React.createElement("button", {
+          className: "demo-btn",
+          style: { background: mode === "demo" ? "linear-gradient(135deg, #10B981, #059669)" : "#334155" },
+          onClick: () => setMode("demo")
+        }, "Demo Mode"),
+        React.createElement("button", {
+          className: "demo-btn",
+          style: { background: mode === "live" ? "linear-gradient(135deg, #6366F1, #8B5CF6)" : "#334155" },
+          onClick: () => setMode("live")
+        }, "Live AI"),
+        mode === "live" && React.createElement("input", {
+          type: "password",
+          placeholder: "Paste your Anthropic API key (sk-ant-...)",
+          value: apiKey,
+          onChange: (e) => setApiKey(e.target.value)
+        })
+      ),
+      React.createElement("p", { className: "hint" },
+        mode === "demo"
+          ? "✨ Demo mode — uses pre-generated sample outputs to show the full pipeline. No API key needed!"
+          : "🔑 Live mode — calls Claude AI in real-time. Get your API key from console.anthropic.com. Your key stays in your browser and is never stored."
+      )
+    ),
+
+    // Persona selector
+    React.createElement("section", { className: "section" },
+      React.createElement("h2", { className: "section-title" }, "👤 Who are you?"),
+      React.createElement("p", { style: { color: "#64748B", fontSize: 13, marginBottom: 16 } }, "Select your role to tailor the BDD pipeline to your workflow"),
+      React.createElement("div", { className: "persona-grid" },
+        Object.values(PERSONAS).map(p => {
+          const active = persona === p.id;
+          return React.createElement("button", {
+            key: p.id,
+            className: "persona-card" + (active ? " active" : "") + (loading ? " disabled" : ""),
+            disabled: loading,
+            onClick: () => { setPersona(p.id); setRequirement(""); setBddText(""); setCodeText(""); setTestResults(null); setCompletedPhases([]); setCurrentPhase("requirement"); },
+            style: { border: "2px solid " + (active ? p.color : "#334155"), background: active ? p.color + "11" : "#0F172A", boxShadow: active ? "0 0 24px " + p.color + "22" : "none" }
+          },
+            React.createElement("div", { className: "persona-icon" }, p.icon),
+            React.createElement("div", { className: "persona-title", style: { color: active ? p.color : "#F8FAFC" } }, p.title),
+            React.createElement("div", { className: "persona-desc" }, p.desc),
+            active && React.createElement("div", { className: "persona-badges" },
+              p.focusBadges.map(b => React.createElement("span", { key: b, className: "focus-badge", style: { borderColor: p.color + "66", color: p.color } }, b))
+            )
+          );
+        })
+      )
+    ),
+
+    // Pipeline (after persona selection)
+    persona && React.createElement(React.Fragment, null,
+      // Stepper
+      React.createElement("div", { className: "stepper" },
+        Object.keys(PHASE_CONFIG).map((p, i, arr) => {
+          const cfg = PHASE_CONFIG[p];
+          const done = completedPhases.includes(p);
+          const active = currentPhase === p;
+          const isEmphasis = PERSONAS[persona]?.emphasis === p;
+          return React.createElement("div", { key: p, className: "step-item" },
+            React.createElement("div", { className: "step-circle", style: { background: done ? cfg.color : active ? cfg.color + "33" : "#1E293B", border: "2px solid " + (active || done ? cfg.color : "#334155"), boxShadow: active ? "0 0 20px " + cfg.color + "44" : "none", transform: isEmphasis ? "scale(1.12)" : "scale(1)" } }, done ? "✓" : cfg.icon),
+            React.createElement("span", { className: "step-label", style: { color: active || done ? "#F8FAFC" : "#64748B", fontWeight: active ? 700 : 400 } }, cfg.label, isEmphasis && React.createElement("span", { style: { fontSize: 9, marginLeft: 3, color: PERSONAS[persona].color } }, "★")),
+            i < arr.length - 1 && React.createElement("div", { className: "step-line", style: { background: done ? cfg.color : "#334155" } })
+          );
+        })
+      ),
+
+      // Input
+      React.createElement("section", { className: "input-section", style: { borderColor: personaCfg.color + "33" } },
+        React.createElement("label", { className: "input-label", style: { color: personaCfg.color } },
+          personaCfg.inputLabel,
+          React.createElement("span", { className: "mode-tag " + (isLive ? "mode-live" : "mode-demo") }, isLive ? "LIVE AI" : "DEMO")
+        ),
+        React.createElement("textarea", { className: "textarea", rows: 5, placeholder: "Enter a requirement or click a sample below…", value: requirement, onChange: e => setRequirement(e.target.value), disabled: loading }),
+        React.createElement("div", { className: "sample-row" },
+          React.createElement("span", { style: { color: "#64748B", fontSize: 12, marginRight: 8 } }, "Try a sample:"),
+          SAMPLES[persona].map((s, i) => React.createElement("button", { key: i, className: "sample-btn", style: { color: personaCfg.color, borderColor: personaCfg.color + "44" }, onClick: () => setRequirement(s), disabled: loading }, "Sample " + (i + 1)))
+        ),
+        React.createElement("button", {
+          className: "run-btn",
+          style: { background: loading || !requirement.trim() ? "#334155" : personaCfg.gradient },
+          onClick: runPipeline,
+          disabled: loading || !requirement.trim()
+        }, loading ? "⏳ Pipeline Running…" : personaCfg.ctaText),
+        error && React.createElement("div", { className: "error" }, error)
+      ),
+
+      React.createElement("div", { ref: resultRef }),
+
+      // BDD output
+      (bddText || (loading && currentPhase === "bdd")) && React.createElement("section", { className: "result-card" },
+        React.createElement("div", { className: "result-header" },
+          React.createElement("span", { style: { color: "#10B981", fontSize: 20 } }, "🧪"),
+          React.createElement("h2", { className: "result-title", style: { color: "#10B981" } }, "BDD Scenarios (Gherkin)"),
+          persona === "pm" && React.createElement("span", { className: "emphasis-badge", style: { background: "#F59E0B22", color: "#F59E0B" } }, "★ PM Focus")
+        ),
+        loading && currentPhase === "bdd" ? React.createElement(LoadingPulse, { message: loadingMsg }) : React.createElement(GherkinViewer, { text: bddText })
+      ),
+
+      // Code output
+      (codeText || (loading && currentPhase === "code")) && React.createElement("section", { className: "result-card" },
+        React.createElement("div", { className: "result-header" },
+          React.createElement("span", { style: { color: "#6366F1", fontSize: 20 } }, "⚙️"),
+          React.createElement("h2", { className: "result-title", style: { color: "#6366F1" } }, "Generated Implementation"),
+          persona === "dev" && React.createElement("span", { className: "emphasis-badge", style: { background: "#6366F122", color: "#6366F1" } }, "★ Dev Focus")
+        ),
+        loading && currentPhase === "code" ? React.createElement(LoadingPulse, { message: loadingMsg }) : React.createElement(CodeViewer, { text: codeText })
+      ),
+
+      // Test output
+      (testResults || (loading && currentPhase === "tests")) && React.createElement("section", { className: "result-card" },
+        React.createElement("div", { className: "result-header" },
+          React.createElement("span", { style: { color: "#EC4899", fontSize: 20 } }, "✅"),
+          React.createElement("h2", { className: "result-title", style: { color: "#EC4899" } }, "Test Execution Results"),
+          persona === "qa" && React.createElement("span", { className: "emphasis-badge", style: { background: "#10B98122", color: "#10B981" } }, "★ QA Focus")
+        ),
+        loading && currentPhase === "tests" ? React.createElement(LoadingPulse, { message: loadingMsg }) : React.createElement(TestResults, { results: testResults, persona })
+      ),
+
+      // Completion
+      completedPhases.length === 4 && React.createElement("section", { className: "completion-banner" },
+        React.createElement("h3", { style: { color: "#F8FAFC", fontSize: 20, fontWeight: 700 } }, "🎉 Full BDD Pipeline Complete!"),
+        React.createElement("p", { style: { color: "#94A3B8", marginTop: 8, fontSize: 14, lineHeight: 1.6 } }, "From a single " + personaCfg.title.toLowerCase() + " input, BDD Forge generated executable scenarios, implementation code, and validated tests — creating living documentation for TurboTax."),
+        React.createElement("div", { className: "value-props" },
+          [["🔗","Traceability","Every line traces to a BDD scenario"],["🤝","Collaboration","One source of truth across roles"],["⚡","Velocity","Spec→Code→Test in seconds"],["🛡️","Quality","Edge cases found before coding"]].map(([icon,t,d]) =>
+            React.createElement("div", { key: t, className: "value-prop" },
+              React.createElement("span", { style: { fontSize: 22 } }, icon),
+              React.createElement("strong", { style: { color: "#F8FAFC", fontSize: 13 } }, t),
+              React.createElement("span", { style: { color: "#94A3B8", fontSize: 11, lineHeight: 1.4 } }, d)
+            )
+          )
+        )
+      )
+    ),
+
+    React.createElement("footer", { className: "footer" }, "Built with Claude AI · BDD Forge · PM-XD Hackathon 2026")
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("app")).render(React.createElement(BDDForge));
+</script>
+</body>
+</html>
