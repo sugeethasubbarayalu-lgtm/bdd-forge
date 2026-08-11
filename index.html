@@ -272,8 +272,8 @@ const DEMO_TESTS = [
    ═══════════════════════════════════════════ */
 const PERSONAS = {
   pm: { id:"pm", icon:"📋", title:"Product Manager", desc:"I have a raw spec or PRD and want executable BDD scenarios as a shared contract", color:"#F59E0B", gradient:"linear-gradient(135deg, #F59E0B, #D97706)", inputLabel:"📄 Paste Your Product Requirement / PRD", emphasis:"bdd", ctaText:"🚀 Generate BDD Specs from Requirement", focusBadges:["Requirement Traceability","Shared Contract","Acceptance Criteria"] },
-  dev: { id:"dev", icon:"⚙️", title:"Developer", desc:"I have a requirement to build and want AI-generated code with BDD-backed tests", color:"#6366F1", gradient:"linear-gradient(135deg, #6366F1, #8B5CF6)", inputLabel:"🔧 Describe the Feature to Build", emphasis:"code", ctaText:"🚀 Generate Implementation from Spec", focusBadges:["Step Definitions","Code Architecture","Edge Case Coverage"] },
-  qa: { id:"qa", icon:"🧪", title:"QA / Tester", desc:"I want to validate quality with comprehensive BDD test scenarios and coverage analysis", color:"#10B981", gradient:"linear-gradient(135deg, #10B981, #059669)", inputLabel:"🎯 Describe What Needs Testing", emphasis:"tests", ctaText:"🚀 Generate Test Suite & Run Validation", focusBadges:["Test Coverage","Edge Cases","Quality Gate"] },
+  devqa: { id:"devqa", icon:"⚙️", title:"Dev / QA", desc:"I build, test, and ship — I want AI-generated code and tests from the same BDD spec", color:"#6366F1", gradient:"linear-gradient(135deg, #6366F1, #8B5CF6)", inputLabel:"🔧 Describe the Feature to Build & Test", emphasis:"code", ctaText:"🚀 Generate Implementation & Tests from Spec", focusBadges:["Step Definitions","Code + Tests","Edge Case Coverage"] },
+  designer: { id:"designer", icon:"🎨", title:"Designer", desc:"I want to understand every edge case and user flow before I start designing", color:"#10B981", gradient:"linear-gradient(135deg, #10B981, #059669)", inputLabel:"🎨 Describe the Feature You're Designing", emphasis:"bdd", ctaText:"🚀 Generate UX Scenarios & Edge Cases", focusBadges:["User Flows","Edge Cases","Error States"] },
 };
 const PHASE_CONFIG = {
   requirement: { label:"Requirement", icon:"📋", color:"#F59E0B" },
@@ -283,8 +283,8 @@ const PHASE_CONFIG = {
 };
 const SAMPLES = {
   pm: ["As a taxpayer filing with TurboTax, I want the system to determine if I qualify for the Earned Income Tax Credit (EITC) based on my filing status, income, and number of qualifying children, so that I can maximize my refund.", "As a first-time filer, I want TurboTax to provide a guided interview that asks me simple questions and translates my answers into the correct tax forms."],
-  dev: ["Build a quarterly estimated tax payment calculator for self-employed taxpayers that factors in projected annual income, business deductions, self-employment tax, and prior year safe harbor rules.", "Implement the TurboTax W-2 import module that accepts a photographed W-2 image, extracts key fields via OCR, and validates against IRS format rules."],
-  qa: ["Validate the W-2 import flow in TurboTax: a user photographs their W-2, the OCR extracts employer EIN, wages, and withholdings. Cover blurry images, multiple W-2s, and amended forms.", "Test the EITC qualification engine for all filing statuses, income thresholds for 0-3 qualifying children, investment income limits, and age requirements."],
+  devqa: ["Build a quarterly estimated tax payment calculator for self-employed taxpayers that factors in projected annual income, business deductions, self-employment tax, and prior year safe harbor rules.", "Implement the TurboTax W-2 import module that accepts a photographed W-2 image, extracts key fields via OCR, and validates against IRS format rules."],
+  designer: ["Validate the W-2 import flow in TurboTax: a user photographs their W-2, the OCR extracts employer EIN, wages, and withholdings. Cover blurry images, multiple W-2s, and amended forms.", "Design the W-2 photo import flow: user takes a photo, sees OCR extraction, reviews extracted fields, and corrects errors. Cover blurry photos and multiple W-2s."],
 };
 
 /* ═══════════════════════════════════════════
@@ -314,7 +314,7 @@ YOUR KNOWLEDGE:
 - BDD Forge is an AI-powered tool that applies Behavioral Driven Development (BDD) methodology to TurboTax product development.
 - It transforms natural-language requirements into: (1) executable BDD Gherkin scenarios, (2) implementation code, and (3) test results with pass/fail detail.
 - The pipeline: Requirement → BDD Scenarios → Implementation Code → Test Results
-- Three personas: Product Manager (starts with PRD/spec, focus on BDD as shared contract), Developer (starts with feature spec, focus on generated code), QA/Tester (starts with test request, focus on coverage and edge cases).
+- Three personas: Product Manager (starts with PRD/spec, focus on BDD as shared contract), Dev/QA (builds, tests, and ships from same BDD spec, focus on code + tests), Designer (understands user flows and edge cases before designing).
 - Tech: React frontend + Anthropic Claude API (Sonnet 4) + Gherkin BDD
 - Domain: TurboTax (EITC, W-2 import, estimated tax payments, filing statuses)
 - Built for PM-XD Hackathon 2026
@@ -374,7 +374,7 @@ function CodeViewer({ text }) {
 function TestResults({ results, persona }) {
   if (!results?.length) return null;
   const total = results.length, passed = results.filter(r => r.status === "passed").length, pct = Math.round((passed / total) * 100);
-  const isQA = persona === "qa";
+  const isQA = persona === "devqa";
   return React.createElement("div", null,
     React.createElement("div", { className: "test-summary" },
       React.createElement("div", { className: "test-summary-row" },
@@ -512,7 +512,7 @@ function ChatWidget() {
 
     if ((wantsGenerate || looksLikeSpec) && !apiKeySaved) {
       setTyping(false);
-      setMessages(prev => [...prev, { role: "bot", text: "Great news — you have **two ways** to run BDD Forge on your own spec! 🚀\n\n**Option 1: Right here (needs API key)**\nEnter an Anthropic API key below, then paste your spec in this chat. I'll generate BDD scenarios instantly.\n\n**Option 2: Via Claude.ai (free, no key needed)** ✨\nThis is the easiest way! Follow these steps:\n\n1. Go to **claude.ai** and start a new chat\n2. Copy the code from: **github.com/sugeethasubbarayalu-lgtm/bdd-forge/blob/main/src/bdd-forge.jsx**\n3. Paste it into Claude and send: **\"Run this as a React artifact\"**\n4. The full app loads — pick your persona:\n\n📋 **Product Manager?** Select PM, paste your PRD or user story, hit Run\n⚙️ **Developer?** Select Dev, describe your feature spec, hit Run\n🧪 **QA / Tester?** Select QA, describe what needs testing, hit Run\n\n5. The AI generates real, unique BDD scenarios + code + test results from YOUR input!\n\nWant me to explain what each persona does in more detail?" }]);
+      setMessages(prev => [...prev, { role: "bot", text: "Great news — you have **two ways** to run BDD Forge on your own spec! 🚀\n\n**Option 1: Right here (needs API key)**\nEnter an Anthropic API key below, then paste your spec in this chat. I'll generate BDD scenarios instantly.\n\n**Option 2: Via Claude.ai (free, no key needed)** ✨\nThis is the easiest way! Follow these steps:\n\n1. Go to **claude.ai** and start a new chat\n2. Copy the code from: **github.com/sugeethasubbarayalu-lgtm/bdd-forge/blob/main/src/bdd-forge.jsx**\n3. Paste it into Claude and send: **\"Run this as a React artifact\"**\n4. The full app loads — pick your persona:\n\n📋 **Product Manager?** Select PM, paste your PRD or user story, hit Run\n⚙️ **Dev/QA?** Select Dev/QA, describe your feature to build \📋 **Product Manager?** Select PM, paste your PRD or user story, hit Run\n⚙️ **Dev/QA?** Select Dev/QA, describe your feature to build & test, hit Run\n🎨 **Designer?** Select Designer, describe the feature you are designing for, hit Run test, hit Run\n🎨 **Designer?** Select Designer, describe the feature you\x27re designing for, hit Run\n\n5. The AI generates real, unique BDD scenarios + code + test results from YOUR input!\n\nWant me to explain what each persona does in more detail?" }]);
       return;
     }
 
@@ -538,10 +538,10 @@ function ChatWidget() {
         reply = "In the AI era, BDD is the **essential bridge** between human intent and machine execution:\n\n- **Precise enough** for AI to generate correct code\n- **Readable enough** for PMs, devs, and QA to align\n- **Traceable** from requirement → scenario → test\n- **Living documentation** that never goes stale\n\nFor TurboTax, where tax rules demand precision, BDD scenarios capture business rules that humans verify and AI implements.";
       } else if (q.includes("how") && (q.includes("use") || q.includes("test") || q.includes("try"))) {
         reply = "**Two ways to use BDD Forge:**\n\n**🔵 Quick Demo (this page)**\n1. Pick a persona (PM, Dev, or QA) above\n2. Click a **Sample** button or type a requirement\n3. Hit **Run** — see the full pipeline with sample outputs\n\n**🟢 Live with YOUR specs (via Claude.ai — free!)** ✨\n1. Go to **claude.ai**\n2. Start a new chat\n3. Copy the code from **github.com/sugeethasubbarayalu-lgtm/bdd-forge/blob/main/src/bdd-forge.jsx**\n4. Paste it and say: **\"Run this as a React artifact\"**\n5. Pick your persona, paste your real PRD/spec, and hit Run!\n\nThe AI generates unique BDD scenarios, code, and tests from whatever you provide. No API key needed — Claude.ai handles it! 🚀";
-      } else if (q.includes("persona") || q.includes("pm") || q.includes("developer") || q.includes("qa") || q.includes("tester")) {
-        reply = "BDD Forge has **3 personas** — each tailors the pipeline to your role:\n\n📋 **Product Manager**\nStart with a PRD, user story, or acceptance criteria. The AI emphasizes **BDD as a shared contract** — your requirement becomes testable scenarios that engineers and QA can execute.\n**Try it:** Paste something like *\"As a taxpayer, I want to determine if I qualify for EITC based on filing status and income\"*\n\n⚙️ **Developer**\nStart with a feature spec. The AI emphasizes **generated code with step definitions** — you get a working implementation scaffold aligned with BDD.\n**Try it:** Paste something like *\"Build a quarterly estimated tax calculator for self-employed taxpayers\"*\n\n🧪 **QA / Tester**\nStart with a test request. The AI emphasizes **coverage, edge cases, and risk** — you get boundary-value scenarios and priority-tagged test results.\n**Try it:** Paste something like *\"Validate the W-2 import flow for blurry images and multiple W-2s\"*\n\nWant to run it with your own spec? Ask me how! 🚀";
+      } else if (q.includes("persona") || q.includes("pm") || q.includes("developer") || q.includes("qa") || q.includes("tester") || q.includes("designer") || q.includes("design")) {
+        reply = "BDD Forge has **3 personas** — each tailors the pipeline to your role:\n\n📋 **Product Manager**\nStart with a PRD, user story, or acceptance criteria. The AI emphasizes **BDD as a shared contract** — your requirement becomes testable scenarios that engineers and QA can execute.\n**Try it:** Paste something like *\"As a taxpayer, I want to determine if I qualify for EITC based on filing status and income\"*\n\n⚙️ **Dev / QA**\nBuild, test, and ship. The AI emphasizes **code + tests from the same BDD spec** — you get a working implementation scaffold aligned with BDD.\n**Try it:** Paste something like *\"Build a quarterly estimated tax calculator for self-employed taxpayers\"*\n\n🎨 **Designer**\nUnderstand every user flow before designing. The AI surfaces **edge cases, error states, and boundary UX** — you get boundary-value scenarios and priority-tagged test results.\n**Try it:** Paste something like *\"Design the EITC qualification experience with error states and boundary UX\"*\n\nWant to run it with your own spec? Ask me how! 🚀";
       } else if (q.includes("generate") || q.includes("my own") || q.includes("my spec") || q.includes("my prd") || q.includes("requirement") || q.includes("run") || q.includes("custom")) {
-        reply = "You can run BDD Forge on **your own specs** two ways:\n\n**Option 1: Here in this chat (needs API key)**\nEnter your Anthropic API key below → paste your spec → I generate BDD instantly.\n\n**Option 2: Via Claude.ai (free — recommended!)** ✨\n1. Open **claude.ai** → new chat\n2. Copy the app code from:\n`github.com/sugeethasubbarayalu-lgtm/bdd-forge/blob/main/src/bdd-forge.jsx`\n3. Paste it and say: **\"Run this as a React artifact\"**\n4. Pick your role:\n   📋 PM → paste your PRD\n   ⚙️ Dev → describe your feature\n   🧪 QA → describe what to test\n5. Hit Run and get real AI-generated results!\n\nNo setup, no API key, works immediately. 🚀";
+        reply = "You can run BDD Forge on **your own specs** two ways:\n\n**Option 1: Here in this chat (needs API key)**\nEnter your Anthropic API key below → paste your spec → I generate BDD instantly.\n\n**Option 2: Via Claude.ai (free — recommended!)** ✨\n1. Open **claude.ai** → new chat\n2. Copy the app code from:\n`github.com/sugeethasubbarayalu-lgtm/bdd-forge/blob/main/src/bdd-forge.jsx`\n3. Paste it and say: **\"Run this as a React artifact\"**\n4. Pick your role:\n   📋 PM → paste your PRD\n   ⚙️ Dev/QA → describe your feature to build & test\n   🎨 Designer → describe what you are designing\n5. Hit Run and get real AI-generated results!\n\nNo setup, no API key, works immediately. 🚀";
       } else if (q.includes("api key") || q.includes("anthropic") || q.includes("key")) {
         reply = "To get an API key:\n\n1. Go to **console.anthropic.com**\n2. Sign up or log in\n3. Go to **API Keys** section\n4. Create a new key (starts with `sk-ant-...`)\n5. Paste it in the input field below this chat\n\nThe key enables live AI generation. Your key stays in your browser only.";
       } else if (q.includes("tech") || q.includes("stack") || q.includes("built with") || q.includes("architecture")) {
@@ -656,19 +656,19 @@ function BDDForge() {
     setError(""); setBddText(""); setCodeText(""); setTestResults(null); setCompletedPhases([]);
     try {
       setCurrentPhase("bdd"); setLoading(true);
-      setLoadingMsg(persona==="pm"?"Translating your PRD into executable BDD specs…":persona==="dev"?"Analyzing feature spec & generating BDD…":"Building comprehensive test scenarios…");
+      setLoadingMsg(persona==="pm"?"Translating your PRD into executable BDD specs…":persona==="devqa"?"Analyzing feature spec & generating BDD…":"Building comprehensive test scenarios…");
       scroll();
       const bdd = await callClaude(apiKey, BDD_SYSTEM(persona), "Generate BDD Gherkin scenarios for:\n\n"+requirement);
       setBddText(bdd); setCompletedPhases(["requirement"]); setLoading(false);
       await new Promise(r => setTimeout(r, 800));
       setCurrentPhase("code"); setLoading(true);
-      setLoadingMsg(persona==="dev"?"Generating production code with step definitions…":"Generating implementation from BDD specs…");
+      setLoadingMsg(persona==="devqa"?"Generating production code with step definitions…":"Generating implementation from BDD specs…");
       scroll();
       const code = await callClaude(apiKey, CODE_SYSTEM, "BDD Scenarios:\n"+bdd+"\n\nGenerate the implementation code.");
       setCodeText(code); setCompletedPhases(["requirement","bdd"]); setLoading(false);
       await new Promise(r => setTimeout(r, 800));
       setCurrentPhase("tests"); setLoading(true);
-      setLoadingMsg(persona==="qa"?"Running full test suite with coverage analysis…":"Executing BDD test scenarios…");
+      setLoadingMsg(persona==="devqa"?"Running full test suite with coverage analysis…":"Executing BDD test scenarios…");
       scroll();
       const raw = await callClaude(apiKey, TEST_SYSTEM, "BDD:\n"+bdd+"\n\nCode:\n"+code+"\n\nGenerate test results.");
       let parsed;
@@ -773,7 +773,7 @@ function BDDForge() {
         React.createElement("div", { className: "result-header" },
           React.createElement("span", { style: { color:"#6366F1", fontSize:20 } }, "⚙️"),
           React.createElement("h2", { className: "result-title", style: { color:"#6366F1" } }, "Generated Implementation"),
-          persona==="dev" && React.createElement("span", { className: "emphasis-badge", style: { background:"#6366F122", color:"#6366F1" } }, "★ Dev Focus")
+          persona==="devqa" && React.createElement("span", { className: "emphasis-badge", style: { background:"#6366F122", color:"#6366F1" } }, "★ Dev/QA Focus")
         ),
         loading&&currentPhase==="code" ? React.createElement(LoadingPulse, { message: loadingMsg }) : React.createElement(CodeViewer, { text: codeText })
       ),
@@ -782,7 +782,7 @@ function BDDForge() {
         React.createElement("div", { className: "result-header" },
           React.createElement("span", { style: { color:"#EC4899", fontSize:20 } }, "✅"),
           React.createElement("h2", { className: "result-title", style: { color:"#EC4899" } }, "Test Execution Results"),
-          persona==="qa" && React.createElement("span", { className: "emphasis-badge", style: { background:"#10B98122", color:"#10B981" } }, "★ QA Focus")
+          persona==="designer" && React.createElement("span", { className: "emphasis-badge", style: { background:"#EC489922", color:"#EC4899" } }, "★ Designer Focus")
         ),
         loading&&currentPhase==="tests" ? React.createElement(LoadingPulse, { message: loadingMsg }) : React.createElement(TestResults, { results: testResults, persona })
       ),

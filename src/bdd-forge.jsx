@@ -16,33 +16,33 @@ const PERSONAS = {
     ctaText: "🚀 Generate BDD Specs from Requirement",
     focusBadges: ["Requirement Traceability", "Shared Contract", "Acceptance Criteria"],
   },
-  dev: {
-    id: "dev",
+  devqa: {
+    id: "devqa",
     icon: "⚙️",
-    title: "Developer",
-    short: "Dev",
-    desc: "I have a requirement to build and want AI-generated code with BDD-backed tests",
+    title: "Dev / QA",
+    short: "Dev/QA",
+    desc: "I build, test, and ship — I want AI-generated code and tests from the same BDD spec",
     color: "#6366F1",
     gradient: "linear-gradient(135deg, #6366F1, #8B5CF6)",
-    placeholder: "Describe the feature or module you need to build…\n\nExample: Build a quarterly estimated tax payment calculator for self-employed taxpayers that factors in projected annual income, business deductions, self-employment tax, and prior year safe harbor rules.",
-    inputLabel: "🔧 Describe the Feature to Build",
+    placeholder: "Describe the feature you need to build and test…\n\nExample: Build a quarterly estimated tax payment calculator for self-employed taxpayers that factors in projected annual income, business deductions, self-employment tax, and prior year safe harbor rules.",
+    inputLabel: "🔧 Describe the Feature to Build & Test",
     emphasis: "code",
-    ctaText: "🚀 Generate Implementation from Spec",
-    focusBadges: ["Step Definitions", "Code Architecture", "Edge Case Coverage"],
+    ctaText: "🚀 Generate Implementation & Tests from Spec",
+    focusBadges: ["Step Definitions", "Code + Tests", "Edge Case Coverage"],
   },
-  qa: {
-    id: "qa",
-    icon: "🧪",
-    title: "QA / Tester",
-    short: "QA",
-    desc: "I want to validate quality with comprehensive BDD test scenarios and coverage analysis",
-    color: "#10B981",
-    gradient: "linear-gradient(135deg, #10B981, #059669)",
-    placeholder: "Describe what you want to test or paste existing scenarios…\n\nExample: Validate the W-2 import flow in TurboTax: a user photographs their W-2, the OCR extracts employer EIN, wages, and withholdings, and the data populates the correct fields. Cover cases for blurry images, multiple W-2s, and amended forms.",
-    inputLabel: "🎯 Describe What Needs Testing",
-    emphasis: "tests",
-    ctaText: "🚀 Generate Test Suite & Run Validation",
-    focusBadges: ["Test Coverage", "Edge Cases", "Quality Gate"],
+  designer: {
+    id: "designer",
+    icon: "🎨",
+    title: "Designer",
+    short: "Design",
+    desc: "I want to understand every edge case and user flow before I start designing",
+    color: "#EC4899",
+    gradient: "linear-gradient(135deg, #EC4899, #DB2777)",
+    placeholder: "Describe the feature or user flow you're designing for…\n\nExample: Design the EITC qualification experience in TurboTax where users answer questions about filing status, income, and dependents, and the system shows whether they qualify with an estimated credit amount.",
+    inputLabel: "🎨 Describe the Feature You're Designing",
+    emphasis: "bdd",
+    ctaText: "🚀 Generate UX Scenarios & Edge Cases",
+    focusBadges: ["User Flows", "Edge Cases", "Error States"],
   },
 };
 
@@ -58,19 +58,19 @@ const SAMPLES = {
     "As a taxpayer filing with TurboTax, I want the system to determine if I qualify for the Earned Income Tax Credit (EITC) based on my filing status, income, and number of qualifying children, so that I can maximize my refund.",
     "As a first-time filer, I want TurboTax to provide a guided interview that asks me simple questions and translates my answers into the correct tax forms, so that I don't need to understand tax terminology.",
   ],
-  dev: [
-    "Build a quarterly estimated tax payment calculator for self-employed taxpayers that factors in projected annual income, business deductions, self-employment tax, and prior year safe harbor rules.",
-    "Implement the TurboTax W-2 import module that accepts a photographed W-2 image, extracts key fields via OCR (employer EIN, wages, federal withholding, state withholding), and validates against IRS format rules.",
+  devqa: [
+    "Build a quarterly estimated tax payment calculator for self-employed taxpayers that factors in projected annual income, business deductions, self-employment tax, and prior year safe harbor rules. Include unit tests for boundary conditions.",
+    "Implement the TurboTax W-2 import module that accepts a photographed W-2 image, extracts key fields via OCR (employer EIN, wages, federal withholding, state withholding), validates against IRS format rules, and includes test coverage for blurry images and multiple W-2s.",
   ],
-  qa: [
-    "Validate the W-2 import flow in TurboTax: a user photographs their W-2, the OCR extracts employer EIN, wages, and withholdings, and the data populates the correct fields. Cover cases for blurry images, multiple W-2s, and amended forms.",
-    "Test the EITC qualification engine for all filing statuses (Single, MFJ, MFS, HoH, QW), income thresholds for 0-3 qualifying children, investment income limits, and age requirements for childless filers.",
+  designer: [
+    "Design the EITC qualification experience in TurboTax where users answer questions about filing status, income, and dependents, and the system shows whether they qualify — cover happy path, disqualification messaging, and boundary cases where the user is close to the threshold.",
+    "Design the W-2 photo import flow in TurboTax: user takes a photo, sees OCR extraction in progress, reviews extracted fields, and corrects any errors. Cover cases for blurry photos, partial captures, and multiple W-2s from different employers.",
   ],
 };
 
 const SYSTEM_PROMPTS = {
   bdd: (persona) => `You are a senior QA architect specializing in Behavioral Driven Development (BDD) for TurboTax at Intuit.
-Given a product ${persona === "pm" ? "requirement/PRD" : persona === "dev" ? "feature spec" : "test request"}, generate precise Gherkin BDD scenarios.
+Given a product ${persona === "pm" ? "requirement/PRD" : persona === "devqa" ? "feature spec to build and test" : "UX design requirement"}, generate precise Gherkin BDD scenarios.
 
 Rules:
 - Generate 3-4 scenarios covering happy path, edge cases, and error handling
@@ -79,7 +79,8 @@ Rules:
 - Include a Background section if shared context exists
 - Include @tags for categorization (e.g., @happy-path, @edge-case, @error-handling)
 ${persona === "pm" ? "- Add acceptance criteria notes as comments linking back to requirements" : ""}
-${persona === "qa" ? "- Include boundary value scenarios and negative test cases\n- Add @priority tags (P0, P1, P2)" : ""}
+${persona === "designer" ? "- Include user-facing scenarios: what the user sees, error messages, empty states, and boundary UX\n- Add @ux-flow and @error-state tags" : ""}
+${persona === "devqa" ? "- Include boundary value scenarios and negative test cases\n- Add @priority tags (P0, P1, P2)" : ""}
 
 Respond ONLY with the Gherkin text. No markdown fences, no preamble, no explanation.`,
 
@@ -88,7 +89,7 @@ Respond ONLY with the Gherkin text. No markdown fences, no preamble, no explanat
 Rules:
 - Implement the business logic described in the scenarios
 - Use clean, readable code with JSDoc comments
-${persona === "dev" ? "- Include detailed step definition mappings\n- Add error handling and input validation\n- Structure as a proper module with clear exports" : "- Include step definitions as comments"}
+${persona === "devqa" ? "- Include detailed step definition mappings\n- Add error handling and input validation\n- Include test helper functions\n- Structure as a proper module with clear exports" : "- Include step definitions as comments"}
 - Use realistic 2024 tax calculation logic
 - Keep under 90 lines but make it complete and functional
 
@@ -101,10 +102,10 @@ Each test object must have:
 - "steps": array of { "text": step text, "status": "passed"|"failed"|"skipped", "duration": milliseconds }
 - "status": "passed"|"failed"
 - "duration": total milliseconds
-${persona === "qa" ? '- "coverage": percentage string like "94%"\n- "risk": "low"|"medium"|"high"' : ""}
+${persona === "devqa" ? '- "coverage": percentage string like "94%"\n- "risk": "low"|"medium"|"high"' : ""}
 
 Make 80-90% of tests pass. If any fail, make the failure realistic (edge case with specific threshold).
-${persona === "qa" ? "Include at least one boundary-value failure and one negative test case." : ""}
+${persona === "devqa" ? "Include at least one boundary-value failure and one negative test case." : ""}
 
 Respond ONLY with valid JSON array. No markdown fences, no preamble.`,
 };
@@ -245,7 +246,7 @@ function TestResults({ results, persona }) {
   const passed = results.filter((r) => r.status === "passed").length;
   const failed = total - passed;
   const pct = Math.round((passed / total) * 100);
-  const isQA = persona === "qa";
+  const isQA = persona === "devqa";
 
   return (
     <div>
@@ -405,21 +406,21 @@ export default function BDDForge() {
 
     try {
       setCurrentPhase("bdd"); setLoading(true);
-      setLoadingMsg(persona === "pm" ? "Translating your PRD into executable BDD specs…" : persona === "dev" ? "Analyzing feature spec & generating BDD scenarios…" : "Building comprehensive test scenarios…");
+      setLoadingMsg(persona === "pm" ? "Translating your PRD into executable BDD specs…" : persona === "devqa" ? "Analyzing feature spec & generating BDD scenarios…" : "Mapping out user flows and edge cases…");
       scroll();
       const bdd = await callClaude(SYSTEM_PROMPTS.bdd(persona), `Input:\n${requirement}`);
       setBddText(bdd); setCompletedPhases(["requirement"]); setLoading(false);
       await new Promise((r) => setTimeout(r, 800));
 
       setCurrentPhase("code"); setLoading(true);
-      setLoadingMsg(persona === "dev" ? "Generating production code with step definitions…" : "Generating implementation from BDD specs…");
+      setLoadingMsg(persona === "devqa" ? "Generating production code with step definitions…" : "Generating implementation from BDD specs…");
       scroll();
       const code = await callClaude(SYSTEM_PROMPTS.code(persona), `BDD Scenarios:\n${bdd}\n\nGenerate the implementation code.`);
       setCodeText(code); setCompletedPhases(["requirement", "bdd"]); setLoading(false);
       await new Promise((r) => setTimeout(r, 800));
 
       setCurrentPhase("tests"); setLoading(true);
-      setLoadingMsg(persona === "qa" ? "Running full test suite with coverage analysis…" : "Executing BDD test scenarios…");
+      setLoadingMsg(persona === "devqa" ? "Running full test suite with coverage analysis…" : "Executing BDD test scenarios…");
       scroll();
       const raw = await callClaude(SYSTEM_PROMPTS.tests(persona), `BDD:\n${bdd}\n\nCode:\n${code}\n\nGenerate test results.`);
       let parsed;
@@ -524,7 +525,7 @@ export default function BDDForge() {
               <div style={S.resultHeader}>
                 <span style={{ color: "#6366F1", fontSize: 20 }}>⚙️</span>
                 <h2 style={{ ...S.resultTitle, color: "#6366F1" }}>Generated Implementation</h2>
-                {persona === "dev" && <span style={{ ...S.emphasisBadge, background: "#6366F122", color: "#6366F1" }}>★ Dev Focus</span>}
+                {persona === "devqa" && <span style={{ ...S.emphasisBadge, background: "#6366F122", color: "#6366F1" }}>★ Dev/QA Focus</span>}
               </div>
               {loading && currentPhase === "code" ? <LoadingPulse message={loadingMsg} /> : <CodeViewer text={codeText} />}
             </section>
@@ -535,7 +536,7 @@ export default function BDDForge() {
               <div style={S.resultHeader}>
                 <span style={{ color: "#EC4899", fontSize: 20 }}>✅</span>
                 <h2 style={{ ...S.resultTitle, color: "#EC4899" }}>Test Execution Results</h2>
-                {persona === "qa" && <span style={{ ...S.emphasisBadge, background: "#10B98122", color: "#10B981" }}>★ QA Focus</span>}
+                {persona === "designer" && <span style={{ ...S.emphasisBadge, background: "#EC489922", color: "#EC4899" }}>★ Designer Focus</span>}
               </div>
               {loading && currentPhase === "tests" ? <LoadingPulse message={loadingMsg} /> : <TestResults results={testResults} persona={persona} />}
             </section>
